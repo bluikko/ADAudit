@@ -98,7 +98,9 @@ $outfile = "C:\Program Files\Scripts\Data\DCAudit-$(Get-Date -Format yyyy-MM-dd)
 $outlist | Export-Csv -NoTypeInformation -Path $outfile
 
 $bodyraw = (Get-Content $outfile) -replace ',OU=Users,OU=Company,DC=domain,DC=tld','...' -replace ',OU=Company,DC=domain,DC=tld','...'
-$body = ConvertFrom-Csv $bodyraw | ConvertTo-Html -Head $bodycss -Body "<h1>DC Audit report</h1>" -PostContent "<h6>Generated on $(Get-Date) in $(((Get-Date) - $starttime).TotalMilliseconds / 1000) seconds<br/>on $($machineinfo.WindowsProductName) $($machineinfo.WindowsBuildLabEx)<br/>with $(($machineinfo.OsHotFixes | Measure-Object).Count) HotFixes installed and booted on $($machineinfo.OsLastBootUpTime)</h6>" | Out-String
+$body = ConvertFrom-Csv $bodyraw | ConvertTo-Html -Head $bodycss -Body "<h1>DC Audit report</h1>" -PostContent "<h6>Generated on $(Get-Date) in `
+ $(((Get-Date) - $starttime).TotalMilliseconds / 1000) seconds<br/>on $($machineinfo.WindowsProductName) $($machineinfo.WindowsBuildLabEx)<br/>with `
+ $(($machineinfo.OsHotFixes | Measure-Object).Count) HotFixes installed and booted on $($machineinfo.OsLastBootUpTime)</h6>" | Out-String
 
 $body = $body -replace '<td>(?=[^<]*? was deleted)','<td class="del">'
 $body = $body -replace '<td>(?=[^<]*? was created)','<td class="add">'
@@ -106,4 +108,5 @@ $body = $body -replace '<td>(?=[^<]*? password)','<td class="pass">'
 $body = $body -replace '<td>(?=[^<]*? was (enabled|unlocked))','<td class="enable">'
 $body = $body -replace '<td>(?=[^<]*? was (disabled|locked))','<td class="disable">'
 
-Send-MailMessage -To $mailto -From "DC audit $(HOSTNAME) <$($mailfrom)>" -Subject "DC Audit report for day $(Get-Date -Format FileDate) on $(HOSTNAME)" -SmtpServer $mailserver -Body $body -BodyAsHtml -Priority Low -Attachments $outfile
+Send-MailMessage -To $mailto -From "DC audit $(HOSTNAME) <$($mailfrom)>" -Subject "DC Audit report for day $(Get-Date -Format FileDate) on $(HOSTNAME)" `
+ -SmtpServer $mailserver -Body $body -BodyAsHtml -Priority Low -Attachments $outfile
